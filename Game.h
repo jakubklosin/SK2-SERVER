@@ -6,13 +6,13 @@
 #include <string>
 #include <random>
 #include <iostream>
-
+#include "User.h"
 using json = nlohmann::json;
 
 class Game{
     public: 
         std::vector<json> questions;
-        std::vector<int> userSockets;
+        std::vector<User> users;
         int hostSocket;
     public:
         std::string id;
@@ -27,8 +27,8 @@ class Game{
         }
         addHost(hostFd);
     }
-    void addUserToGame(int userSocket){
-        userSockets.push_back(userSocket);
+    void addUserToGame(User user){
+        users.push_back(user);
     }
     void addHost(int sock){
         hostSocket = sock;
@@ -45,8 +45,8 @@ class Game{
             }
 
             std::cout << "Użytkownicy w grze:\n";
-            for (int socket : userSockets) {
-                std::cout << "Użytkownik Socket ID: " << socket << std::endl;
+            for (User user: users) {
+                std::cout << "Użytkownik Socket ID: " << user.socket.sock << std::endl;
             }
         }
 
