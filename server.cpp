@@ -45,41 +45,6 @@ int main() {
         perror("accept");
         exit(EXIT_FAILURE);
     }
-        // newGame.createGame(j);
-        // newGame.addUserToGame(new_socket);
-        // newGame.getGameInfo();
-
-    //  try {
-    //     while (true) {
-    //         clientSocket.readData();
-            
-            
-    //         json combinedJson; // Główny obiekt JSON do przechowywania połączonych danych
-    //         for (auto& message : clientSocket.message) {
-    //             try {
-    //                 std::cout << message;
-    //                 json j = json::parse(message);
-    //                 for (auto& [key, value] : j.items()) {
-    //                     combinedJson[key] = value;
-    //                 }
-    //                 // std::cout << j.dump();
-    //             } catch (const json::exception& e) {
-    //                 std::cerr << "Błąd parsowania JSON: " << e.what() << '\n';
-    //             }
-    //         }
-    //         std::cout << combinedJson.dump();
-    //         if (!combinedJson.empty() && combinedJson.contains("action")) {
-    //             std::cout << "Akcja: " << combinedJson["action"] << std::endl;
-    //         } else {
-    //             std::cout << "Brak 'akcji'" << std::endl;
-    //         }
-
-    //         clientSocket.message.clear(); // Czyszczenie listy po przetworzeniu
-    //     }
-    // } catch (const char* msg) {
-    //     std::cerr << "Error: " << msg << std::endl;
-    //     clientSocket.closeSocket();
-    // }
     
     std::unordered_map<std::string, Game> games;
 
@@ -87,13 +52,11 @@ int main() {
     j["action"] = "create";
     j["kod pokoju"] = "777";
 
-    // Tworzenie tablicy pytań
-    std::vector<json> pytania;
+    Game testGame;
     for (int i = 0; i < 5; ++i) {
-        pytania.push_back({{"pytanie", ""}, {"odpowiedzi", {"", "", "", ""}}});
+        testGame.questions.push_back({{"pytanie", "przykladowe pytanie"}, {"odpowiedzi", {"A", "B", "C", "D"}}});
     }
 
-    Game testGame;
     testGame.createGame(j,55);
     games[testGame.id] = testGame;
 
@@ -118,7 +81,7 @@ int main() {
                 std::cout << "Akcja: " << action << std::endl;
 
                 json responseJson; // Obiekt JSON do wysłania odpowiedzi
-
+                json questions;
                 if (action == "create") {
                     // Logika tworzenia gry
                     Game newGame;
@@ -139,14 +102,14 @@ int main() {
                         Game &foundGame = gameIter->second; // Referencja do znalezionej gry
                         // Możesz teraz wykonać operacje na znalezionej grze, np.:
                         foundGame.addUserToGame(clientSocket.sock);
+                        questions = foundGame.getQuestions();
+                        std::cout << questions<<std::endl;
                         foundGame.getGameInfo();
                     } else {
                         std::cout<<"nie znaleziono takiej gry"<<std::endl;
-                        // Gra o danym ID nie istnieje w mapie
-                        // Możesz na przykład utworzyć nową grę lub obsłużyć ten przypadek inaczej
                     }
                     // Logika dołączania do gry
-                    responseJson["status"] = "Dołączono do gry";
+                     responseJson = questions;
                     // Dodaj inne potrzebne informacje do responseJson
                 } else {
                     responseJson["status"] = "Nieznana akcja";

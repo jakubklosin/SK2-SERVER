@@ -10,7 +10,7 @@
 using json = nlohmann::json;
 
 class Game{
-    private: 
+    public: 
         std::vector<json> questions;
         std::vector<int> userSockets;
         int hostSocket;
@@ -33,7 +33,9 @@ class Game{
     void addHost(int sock){
         hostSocket = sock;
     }
-
+    json getQuestions() const {
+            return json{ {"pytania", questions} };
+        }
     void getGameInfo() const {
             std::cout << "Informacje o grze (ID: " << id << "):\n";
             std::cout << "Deskryptor Hosta: " << hostSocket <<std::endl;
