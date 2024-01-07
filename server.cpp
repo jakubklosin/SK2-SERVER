@@ -154,6 +154,8 @@ int main() {
 
                 // Konwersja responseJson na string i wysyłanie
                 std::string responseStr = responseJson.dump();
+                
+                //Wysyłanie wiadomosci
                 clientSocket.writeData(responseStr);
             }
 
