@@ -136,8 +136,6 @@ int main() {
                             newUser.setNickname(combinedJson["nickname"]);
                         }
                         foundGame.addUserToGame(newUser);
-
-                        foundGame.addUserToGame(newUser);
                         questions = foundGame.getQuestions();
                         // std::cout << questions<<std::endl;
                         foundGame.getGameInfo();
