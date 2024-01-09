@@ -14,6 +14,7 @@ class User{
         Socket socket;
         int score;
         std::string name;
+        std::string nickname;
     
         int getScore(){
             return score;
@@ -21,6 +22,13 @@ class User{
         void incrementScore(){
             score += 10;
         }
+        void setNickname(const std::string& nick) {
+        nickname = nick;
+    }
+
+};
+
+#endif 
 
 };
 

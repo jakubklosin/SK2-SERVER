@@ -132,6 +132,12 @@ int main() {
 
                         User newUser;
                         newUser.socket = clientSocket;
+                        newUser.socket = clientSocket;
+                        if (combinedJson.contains("nickname")) {
+                            newUser.setNickname(combinedJson["nickname"]);
+                        }
+                        foundGame.addUserToGame(newUser);
+                        foundGame.getGameInfo();
 
                         foundGame.addUserToGame(newUser);
                         questions = foundGame.getQuestions();
@@ -151,6 +157,7 @@ int main() {
                 }
                 clientSocket.message.clear(); // Czyszczenie listy po przetworzeniu
                 }
+            } 
             }
         }
 
