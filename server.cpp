@@ -91,7 +91,7 @@ int main() {
                     games[newGame.id] = newGame;
                     newGame.getGameInfo(); 
                     responseJson["status"] = "Gra utworzona";
-                    // Dodaj inne potrzebne informacje do responseJson
+                  
                 } else if (action == "join") {
                     std::string id ;
                     if(combinedJson.contains("kod pokoju")){
@@ -101,7 +101,7 @@ int main() {
                     if (gameIter != games.end()) {
                         // Gra o danym ID została znaleziona w mapie
                         Game &foundGame = gameIter->second; // Referencja do znalezionej gry
-                        // Możesz teraz wykonać operacje na znalezionej grze, np.:
+                    
 
                         User newUser;
                         newUser.socket = clientSocket;
@@ -115,7 +115,7 @@ int main() {
                     }
                     // Logika dołączania do gry
                      responseJson = questions;
-                    // Dodaj inne potrzebne informacje do responseJson
+              
                 } else {
                     responseJson["status"] = "Nieznana akcja";
                 }
