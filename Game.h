@@ -7,6 +7,7 @@
 #include <random>
 #include <iostream>
 #include "User.h"
+
 using json = nlohmann::json;
 
 class Game{
@@ -36,6 +37,7 @@ class Game{
     json getQuestions() const {
             return json{ {"pytania", questions} };
         }
+        
     void getGameInfo() const {
             std::cout << "Informacje o grze (ID: " << id << "):\n";
             std::cout << "Deskryptor Hosta: " << hostSocket <<std::endl;
@@ -46,9 +48,14 @@ class Game{
 
             std::cout << "Użytkownicy w grze:\n";
             for (User user: users) {
+ 
                 std::cout << "Użytkownik Socket ID: " << user.socket.sock << ", Nickname: " << user.nickname << std::endl;
+ 
+                std::cout << "Użytkownik Socket ID: " << user.socket.sock << std::endl;
+ 
             }
         }
+
 
 };
 

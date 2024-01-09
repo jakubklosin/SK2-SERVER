@@ -15,36 +15,6 @@ class Socket{
     int messageSize = -1;
     std::list<std::string> message;
 
-    // void readData(){ OG
-    //     std::memset(buffer, 0, 512);
-    //     int read_size = read(sock, buffer, sizeof(buffer));
-        
-    //     if(read_size < 1){
-    //         fprintf(stderr, "%d disconnected\n", sock);
-    //         throw "client disconnected";
-    //     }
-    //     nowRead += std::string(buffer, read_size);
-    //     while(true){
-    //         if(messageSize < 0){
-    //             if(nowRead.size() > sizeof(int)){
-    //                 messageSize = ntohl(*(int*)nowRead.c_str());
-    //                 nowRead = nowRead.substr(sizeof(int));
-    //             }
-    //             else
-    //                 break;
-    //         }  
-    //         int len = nowRead.length();
-    //         if(messageSize <= len){
-    //             message.push_back(nowRead.substr(0,messageSize));
-    //             nowRead = nowRead.substr(messageSize);
-    //             messageSize = -1;
-    //         }
-    //         else{
-    //             break;
-    //         }
-    //     }
-    // }
-
     void readData() {
     std::memset(buffer, 0, 512);
     int read_size = read(sock, buffer, sizeof(buffer));

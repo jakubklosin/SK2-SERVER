@@ -138,6 +138,8 @@ int main() {
                         }
                         foundGame.addUserToGame(newUser);
                         foundGame.getGameInfo();
+
+                        foundGame.addUserToGame(newUser);
                         questions = foundGame.getQuestions();
                         std::cout << questions<<std::endl;
                         foundGame.getGameInfo();
@@ -156,6 +158,7 @@ int main() {
                 clientSocket.message.clear(); // Czyszczenie listy po przetworzeniu
                 }
             } 
+            }
         }
 
         // Usuń zamknięte połączenia

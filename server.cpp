@@ -7,6 +7,7 @@
 #include <nlohmann/json.hpp>
 #include "Game.h"
 #include "Socket.h"
+#include "User.h"
 
 using json = nlohmann::json;
 
@@ -101,7 +102,11 @@ int main() {
                         // Gra o danym ID została znaleziona w mapie
                         Game &foundGame = gameIter->second; // Referencja do znalezionej gry
                         // Możesz teraz wykonać operacje na znalezionej grze, np.:
-                        foundGame.addUserToGame(clientSocket.sock);
+
+                        User newUser;
+                        newUser.socket = clientSocket;
+
+                        foundGame.addUserToGame(newUser);
                         questions = foundGame.getQuestions();
                         std::cout << questions<<std::endl;
                         foundGame.getGameInfo();
