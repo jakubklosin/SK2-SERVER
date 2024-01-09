@@ -128,7 +128,6 @@ int main() {
                     if (gameIter != games.end()) {
                         // Gra o danym ID została znaleziona w mapie
                         Game &foundGame = gameIter->second; // Referencja do znalezionej gry
-                        // Możesz teraz wykonać operacje na znalezionej grze, np.:
 
                         User newUser;
                         newUser.socket = clientSocket;
@@ -137,11 +136,10 @@ int main() {
                             newUser.setNickname(combinedJson["nickname"]);
                         }
                         foundGame.addUserToGame(newUser);
-                        foundGame.getGameInfo();
 
                         foundGame.addUserToGame(newUser);
                         questions = foundGame.getQuestions();
-                        std::cout << questions<<std::endl;
+                        // std::cout << questions<<std::endl;
                         foundGame.getGameInfo();
                     } else {
                         std::cout<<"nie znaleziono takiej gry"<<std::endl;
@@ -158,7 +156,7 @@ int main() {
                 clientSocket.message.clear(); // Czyszczenie listy po przetworzeniu
                 }
             } 
-            }
+            
         }
 
         // Usuń zamknięte połączenia

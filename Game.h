@@ -48,11 +48,7 @@ class Game{
 
             std::cout << "Użytkownicy w grze:\n";
             for (User user: users) {
- 
                 std::cout << "Użytkownik Socket ID: " << user.socket.sock << ", Nickname: " << user.nickname << std::endl;
- 
-                std::cout << "Użytkownik Socket ID: " << user.socket.sock << std::endl;
- 
             }
         }
 

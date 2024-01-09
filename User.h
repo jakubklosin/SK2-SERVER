@@ -28,8 +28,5 @@ class User{
 
 };
 
-#endif 
-
-};
 
 #endif 
