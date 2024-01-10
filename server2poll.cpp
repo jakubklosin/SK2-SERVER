@@ -11,6 +11,8 @@
 #include  <poll.h>
 using json = nlohmann::json;
 
+std::string getGameIdForClient( int deskryptor,const std::unordered_map<std::string, Game>& games);
+
 int main() {
     int server_fd;
     struct sockaddr_in address;
@@ -53,6 +55,18 @@ int main() {
 
     std::unordered_map<int, Socket> socketMap;
     std::unordered_map<std::string, Game> games;
+    json j;
+    j["action"] = "create";
+    j["kod pokoju"] = "777";
+
+    Game testGame;
+    for (int i = 0; i < 5; ++i) {
+        testGame.questions.push_back({{"pytanie", "przykladowe pytanie"}, {"odpowiedzi", {"A", "B", "C", "D"}}});
+    }
+    testGame.createGame(j,55);
+    testGame.shuffle(); 
+    // testGame.getGameInfo(); 
+    games[testGame.id] = testGame;
 
     std::vector<struct pollfd> fds;
     fds.push_back({server_fd, POLLIN, 0});
@@ -122,6 +136,7 @@ int main() {
                             responseJson["status"] = "Gra utworzona";
                         } else if (action == "join") {
                             std::string id ;
+
                             if(combinedJson.contains("kod pokoju")){
                             id = combinedJson["kod pokoju"];
                             }
@@ -129,13 +144,13 @@ int main() {
                             if (gameIter != games.end()) {
                                 // Gra o danym ID została znaleziona w mapie
                                 Game &foundGame = gameIter->second; // Referencja do znalezionej gry
-
                                 User newUser;
                                 newUser.socket = clientSocket;
                                 if (combinedJson.contains("nickname")) {
                                     newUser.setNickname(combinedJson["nickname"]);
                                 }
                                 foundGame.addUserToGame(newUser);
+                                foundGame.shuffle();
                                 questions = foundGame.getQuestions();
                                 responseJson = questions;
                                 // std::cout << questions<<std::endl;
@@ -144,6 +159,8 @@ int main() {
                                 std::cout<<"nie znaleziono takiej gry"<<std::endl;
                             }
                         }else if(action == "answering"){
+                            std::string idgry = getGameIdForClient(clientSocket.sock, games);
+                            std::cout<<"gracz o deskryptorze "<<clientSocket.sock<<" przesyla odpowiedz do gry o id: "<<idgry<<std::endl;
                             std::cout<<combinedJson.dump()<< std::endl;
                         } else {
                             responseJson["status"] = "Nieznana akcja";
@@ -155,7 +172,7 @@ int main() {
                     }
                     clientSocket.message.clear(); // Czyszczenie listy po przetworzeniu
                 }
-                // clientSocket.message.clear(); // Czyszczenie listy po przetworzeniu
+                // clientSocket.message.clear();  
             } 
             
         }
@@ -170,4 +187,16 @@ int main() {
 
     close(server_fd);
     return 0;
+}
+
+std::string getGameIdForClient(int deskryptor, const std::unordered_map<std::string, Game>& games) {
+    for (const auto& match : games) {
+        const Game& game = match.second;
+        for (const auto& uzytkownik : game.users) {
+            if (uzytkownik.socket.sock == deskryptor) {
+                return game.id;
+            }
+        }
+    }
+    return ""; 
 }
