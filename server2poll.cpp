@@ -61,9 +61,23 @@ int main() {
     j["kod pokoju"] = "777";
 
     Game testGame;
-    for (int i = 0; i < 5; ++i) {
-        testGame.questions.push_back({{"pytanie", "przykladowe pytanie"}, {"odpowiedzi", {"A", "B", "C", "D"}}});
+  for (int i = 0; i < 5; ++i) {
+    json questionObj;
+    questionObj["pytanie"] = "";  
+
+    json answersArray = json::array();  
+
+    for (int j = 0; j < 4; ++j) {
+        json answer;
+        answer["answerID"] = j;  
+        answer["answerText"] = "";  
+        answersArray.push_back(answer);  
     }
+
+    questionObj["odpowiedzi"] = answersArray;  
+
+    testGame.questions.push_back(questionObj);  
+}
     testGame.createGame(j,55);
     
     testGame.shuffle(); 
@@ -162,6 +176,7 @@ int main() {
                             newGame.addHost(clientSocket.sock);
                             // newGame.getGameInfo(); 
                             std::cout<<"Host o dekryptorze: "<< clientSocket.sock << " utworzyl gre o id: "<< newGame.id<<std::endl;
+                            newGame.getGameInfo();
                             responseJson["status"] = "Gra utworzona";
                         } else if (action == "join") {
                             std::string id ;
@@ -179,6 +194,7 @@ int main() {
                                     newUser.setNickname(combinedJson["nickname"]);
                                 }
                                 foundGame.addUserToGame(newUser);
+                                // foundGame.shuffle();
                                 foundGame.shuffle();
                                 questions = foundGame.getQuestions();
                                 responseJson = questions;

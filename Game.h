@@ -53,7 +53,7 @@ class Game{
         questions = shuffledQuestions;
     }
     json shuffleAnswers(int i) {
-        std::vector<std::string> odpowiedzi = questions[i]["odpowiedzi"].get<std::vector<std::string>>();
+        std::vector<json> odpowiedzi = questions[i]["odpowiedzi"].get<std::vector<json>>();
         std::string pytanie = questions[i]["pytanie"].get<std::string>();
         std::random_device rd;
         std::mt19937 g(rd());
@@ -64,6 +64,7 @@ class Game{
 
         return output;
     }
+   
     void addUserToGame(User user){
         users.push_back(user);
     }
