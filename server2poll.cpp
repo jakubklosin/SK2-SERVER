@@ -88,6 +88,7 @@ int main() {
                     }
 
                     fds.push_back({new_socket, POLLIN, 0});
+                    // clientSocket.message.clear(); // Czyszczenie listy po przetworzeniu
                 } else {
                     // Obsługa danych od klienta
                     Socket& clientSocket = socketMap[fd.fd];
@@ -103,56 +104,58 @@ int main() {
                             std::cerr << "Błąd parsowania JSON: " << e.what() << '\n';
                         }
                     }
-                    std::cout << combinedJson.dump()<<std::endl;
+                    // std::cout << combinedJson.dump()<<std::endl;
 
                     if (!combinedJson.empty() && combinedJson.contains("action")) {
-                std::string action = combinedJson["action"];
-                std::cout << "Akcja: " << action << std::endl;
+                        std::string action = combinedJson["action"];
+                        std::cout << "Akcja: " << action << std::endl;
 
-                json responseJson; // Obiekt JSON do wysłania odpowiedzi
-                json questions;
-                if (action == "create") {
-                    // Logika tworzenia gry
-                    Game newGame;
+                        json responseJson; // Obiekt JSON do wysłania odpowiedzi
+                        json questions;
+                        if (action == "create") {
+                            // Logika tworzenia gry
+                            Game newGame;
 
-                    newGame.createGame(combinedJson, clientSocket.sock); // Tworzenie gry z otrzymanych danych
-                    games[newGame.id] = newGame;
-                    newGame.getGameInfo(); 
-                    responseJson["status"] = "Gra utworzona";
-                } else if (action == "join") {
-                    std::string id ;
-                    if(combinedJson.contains("kod pokoju")){
-                    id = combinedJson["kod pokoju"];
-                    }
-                    auto gameIter = games.find(id);
-                    if (gameIter != games.end()) {
-                        // Gra o danym ID została znaleziona w mapie
-                        Game &foundGame = gameIter->second; // Referencja do znalezionej gry
+                            newGame.createGame(combinedJson, clientSocket.sock); // Tworzenie gry z otrzymanych danych
+                            games[newGame.id] = newGame;
+                            newGame.getGameInfo(); 
+                            responseJson["status"] = "Gra utworzona";
+                        } else if (action == "join") {
+                            std::string id ;
+                            if(combinedJson.contains("kod pokoju")){
+                            id = combinedJson["kod pokoju"];
+                            }
+                            auto gameIter = games.find(id);
+                            if (gameIter != games.end()) {
+                                // Gra o danym ID została znaleziona w mapie
+                                Game &foundGame = gameIter->second; // Referencja do znalezionej gry
 
-                        User newUser;
-                        newUser.socket = clientSocket;
-                        newUser.socket = clientSocket;
-                        if (combinedJson.contains("nickname")) {
-                            newUser.setNickname(combinedJson["nickname"]);
+                                User newUser;
+                                newUser.socket = clientSocket;
+                                if (combinedJson.contains("nickname")) {
+                                    newUser.setNickname(combinedJson["nickname"]);
+                                }
+                                foundGame.addUserToGame(newUser);
+                                questions = foundGame.getQuestions();
+                                responseJson = questions;
+                                // std::cout << questions<<std::endl;
+                                foundGame.getGameInfo();
+                            } else {
+                                std::cout<<"nie znaleziono takiej gry"<<std::endl;
+                            }
+                        }else if(action == "answering"){
+                            std::cout<<combinedJson.dump()<< std::endl;
+                        } else {
+                            responseJson["status"] = "Nieznana akcja";
                         }
-                        foundGame.addUserToGame(newUser);
-                        questions = foundGame.getQuestions();
-                        // std::cout << questions<<std::endl;
-                        foundGame.getGameInfo();
-                    } else {
-                        std::cout<<"nie znaleziono takiej gry"<<std::endl;
-                    }
-                     responseJson = questions;
-                    } else {
-                        responseJson["status"] = "Nieznana akcja";
-                    }
 
-                    std::string responseStr = responseJson.dump();
-                    
-                    clientSocket.writeData(responseStr);
+                        std::string responseStr = responseJson.dump();
+                        
+                        clientSocket.writeData(responseStr);
+                    }
+                    clientSocket.message.clear(); // Czyszczenie listy po przetworzeniu
                 }
-                clientSocket.message.clear(); // Czyszczenie listy po przetworzeniu
-                }
+                // clientSocket.message.clear(); // Czyszczenie listy po przetworzeniu
             } 
             
         }

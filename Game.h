@@ -51,8 +51,6 @@ class Game{
                 std::cout << "Użytkownik Socket ID: " << user.socket.sock << ", Nickname: " << user.nickname << std::endl;
             }
         }
-
-
 };
 
 #endif 
