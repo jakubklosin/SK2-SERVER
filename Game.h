@@ -37,7 +37,7 @@ class Game{
         addHost(hostFd);
     }
     bool isHost(int fd){
-        if(fd = hostSocket){
+        if(fd == hostSocket){
             return true;
         }else{
             return false;

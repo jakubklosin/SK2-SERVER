@@ -65,6 +65,7 @@ int main() {
         testGame.questions.push_back({{"pytanie", "przykladowe pytanie"}, {"odpowiedzi", {"A", "B", "C", "D"}}});
     }
     testGame.createGame(j,55);
+    
     testGame.shuffle(); 
     // testGame.getGameInfo(); 
     games[testGame.id] = testGame;
@@ -122,6 +123,7 @@ int main() {
                     for (auto& pair: games) {
                         Game& game = pair.second;
                         bool host = game.isHost(clientSocket.sock);
+                        std::cout << game.hostSocket<< " " << game.id <<" "<< clientSocket.sock<< std::endl;
                         if(host){
                             std::cout<<"Rozlaczony gracz byl hostem, zamykanie gry"<<std::endl;
                         } 
