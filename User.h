@@ -12,7 +12,7 @@
 class User{
     public:
         Socket socket;
-        int score;
+        int score = 0;
         std::string name;
         std::string nickname;
     

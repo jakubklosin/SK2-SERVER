@@ -67,7 +67,7 @@ int main() {
     testGame.createGame(j,55);
     
     testGame.shuffle(); 
-    // testGame.getGameInfo(); 
+    testGame.getGameInfo(); 
     games[testGame.id] = testGame;
 
     std::vector<struct pollfd> fds;
@@ -191,7 +191,7 @@ int main() {
                         }else if(action == "answering"){
                             std::string gameId = getGameIdForClient(clientSocket.sock, games);
                             std::cout<<"gracz o deskryptorze "<<clientSocket.sock<<" przesyla odpowiedz do gry o id: "<<gameId<<std::endl;
-                            // std::cout<<combinedJson.dump()<< std::endl;
+                            std::cout<<combinedJson.dump()<< std::endl;
                         } else {
                             responseJson["status"] = "Nieznana akcja";
                         }
