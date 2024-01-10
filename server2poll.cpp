@@ -55,6 +55,7 @@ int main() {
 
     std::unordered_map<int, Socket> socketMap;
     std::unordered_map<std::string, Game> games;
+
     json j;
     j["action"] = "create";
     j["kod pokoju"] = "777";
@@ -70,15 +71,21 @@ int main() {
 
     std::vector<struct pollfd> fds;
     fds.push_back({server_fd, POLLIN, 0});
-
+    try
+    {
     while (true) {
         int ret = poll(fds.data(), fds.size(), -1);
         if (ret < 0) {
             perror("poll");
             break;
         }
-
         for (auto &fd : fds) {
+            // if (fd.revents & POLLHUP){
+            //             close(fd.fd);
+            //             fd.fd =-1;
+            //             std::cout<<"Uzytkownik o deskryptorze: "<<fd.fd << " rozlaczyl sie"<<std::endl;
+            //             continue;
+            //         } 
             if (fd.revents & POLLIN) {
                 if (fd.fd == server_fd) {
                     // Akceptacja nowego połączenia
@@ -100,13 +107,31 @@ int main() {
                         newSocket.sock = new_socket;
                         socketMap[new_socket] = newSocket;
                     }
-
                     fds.push_back({new_socket, POLLIN, 0});
-                    // clientSocket.message.clear(); // Czyszczenie listy po przetworzeniu
                 } else {
+                    
                     // Obsługa danych od klienta
                     Socket& clientSocket = socketMap[fd.fd];
+                    try
+                    {
                     clientSocket.readData();
+                    }
+                    catch (const char* msg) {
+                    // std::cerr << "Wyjątek char const*: " << msg << '\n';
+
+                    for (auto& pair: games) {
+                        Game& game = pair.second;
+                        bool host = game.isHost(clientSocket.sock);
+                        if(host){
+                            std::cout<<"Rozlaczony gracz byl hostem, zamykanie gry"<<std::endl;
+                        } 
+                        host = false;
+                    }    
+                    std::cout<<"Uzytkownik o deskryptorze: "<<fd.fd << " rozlaczyl sie"<<std::endl;
+                    close(fd.fd);
+                    fd.fd =-1;
+                    continue;
+                    } 
                     json combinedJson;  
                     for (auto& message : clientSocket.message) {
                         try {
@@ -122,7 +147,7 @@ int main() {
 
                     if (!combinedJson.empty() && combinedJson.contains("action")) {
                         std::string action = combinedJson["action"];
-                        std::cout << "Akcja: " << action << std::endl;
+                        // std::cout << "Akcja: " << action << std::endl;
 
                         json responseJson; // Obiekt JSON do wysłania odpowiedzi
                         json questions;
@@ -132,7 +157,9 @@ int main() {
 
                             newGame.createGame(combinedJson, clientSocket.sock); // Tworzenie gry z otrzymanych danych
                             games[newGame.id] = newGame;
-                            newGame.getGameInfo(); 
+                            newGame.addHost(clientSocket.sock);
+                            // newGame.getGameInfo(); 
+                            std::cout<<"Host o dekryptorze: "<< clientSocket.sock << " utworzyl gre o id: "<< newGame.id<<std::endl;
                             responseJson["status"] = "Gra utworzona";
                         } else if (action == "join") {
                             std::string id ;
@@ -153,15 +180,16 @@ int main() {
                                 foundGame.shuffle();
                                 questions = foundGame.getQuestions();
                                 responseJson = questions;
+                                std::cout<<"Gracz o id: "<< clientSocket.sock<<" dolaczyl do gry o id: "<<foundGame.id<<std::endl;
                                 // std::cout << questions<<std::endl;
-                                foundGame.getGameInfo();
+                                // foundGame.getGameInfo();
                             } else {
                                 std::cout<<"nie znaleziono takiej gry"<<std::endl;
                             }
                         }else if(action == "answering"){
-                            std::string idgry = getGameIdForClient(clientSocket.sock, games);
-                            std::cout<<"gracz o deskryptorze "<<clientSocket.sock<<" przesyla odpowiedz do gry o id: "<<idgry<<std::endl;
-                            std::cout<<combinedJson.dump()<< std::endl;
+                            std::string gameId = getGameIdForClient(clientSocket.sock, games);
+                            std::cout<<"gracz o deskryptorze "<<clientSocket.sock<<" przesyla odpowiedz do gry o id: "<<gameId<<std::endl;
+                            // std::cout<<combinedJson.dump()<< std::endl;
                         } else {
                             responseJson["status"] = "Nieznana akcja";
                         }
@@ -175,11 +203,15 @@ int main() {
                 // clientSocket.message.clear();  
             } 
             
-        }
-
         // Usuń zamknięte połączenia
         fds.erase(std::remove_if(fds.begin(), fds.end(), [](const struct pollfd &pfd) { return pfd.fd == -1; }), fds.end());
+        }
+
     }
+    }catch (const char* msg) {
+    std::cerr << "Wyjątek char const*: " << msg << '\n';
+    }   
+
 
     for (auto &fd : fds) {
         if (fd.fd >= 0) close(fd.fd);
@@ -200,3 +232,5 @@ std::string getGameIdForClient(int deskryptor, const std::unordered_map<std::str
     }
     return ""; 
 }
+ 
+ 

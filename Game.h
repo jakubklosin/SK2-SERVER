@@ -36,6 +36,13 @@ class Game{
         }
         addHost(hostFd);
     }
+    bool isHost(int fd){
+        if(fd = hostSocket){
+            return true;
+        }else{
+            return false;
+        }
+    }
     void shuffle() {
         for(int i = 0; i<questions.size(); i++ ){
         //     for(int j = 0; j<4; j++ ){
