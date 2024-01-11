@@ -18,8 +18,9 @@ class Game{
         std::vector<User> users;
         int hostSocket;
         std::string id;
-    json gameStart(){
-        return json{ {"status", "start"} };
+        bool isStarted=false;
+    void gameStart(){
+        isStarted = true;
     }
     json gameEnd(Game id){
         return json{ {"status", "end"} };
