@@ -14,7 +14,6 @@ using json = nlohmann::json;
 class Game{
     public: 
         std::vector<json> questions;
-        
         std::vector<User*> users;
         int hostSocket;
         std::string id;
@@ -27,6 +26,11 @@ class Game{
     }
     json gameNextRound(Game id){
         return json{ {"status", "nextRound"} };
+    }
+    void sendToAllClients(std::string message){
+        for (User* user : users) {
+            user->socket.writeData(message);
+        }
     }
     void createGame(const json &gameData, int hostFd){
         if(gameData.contains("pytania")){
@@ -84,7 +88,18 @@ class Game{
         scoreboard["users"].push_back(userJson);
     }
     return scoreboard;
-}
+    }
+    json getUsers() {
+    json usernames;
+    usernames["joined"] = "users";
+    usernames["users"] = json::array();
+    for (User* user : users) {
+        json userJson;
+        userJson["user"] = user->nickname;
+        usernames["users"].push_back(userJson);
+    }
+    return usernames;
+    }
 
     void getGameInfo() const {
     std::cout << "Informacje o grze (ID: " << id << "):\n";

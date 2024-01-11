@@ -12,7 +12,8 @@
 using json = nlohmann::json;
 
 std::string getGameIdForClient( int deskryptor,const std::unordered_map<std::string, Game>& games);
-// Socket getGameHostSocket( std::unordered_map<int, Socket> socketMap );
+std::string getGameIdForHost(int fd,const std::unordered_map<std::string, Game>& games);
+Socket getGameHostSocket( std::unordered_map<int, Socket> socketMap );
 User* getUserByFd(int socket, std::unordered_map<int, User*> & users);
 int main() {
     int server_fd;
@@ -196,12 +197,17 @@ int main() {
                                 responseJson = questions;
                                 // std::cout<<"Gracz o id: "<< clientSocket.sock<<" dolaczyl do gry o id: "<<foundGame.id<<std::endl;
                                 // std::cout << questions<<std::endl;
-                                json scoreboard = foundGame.getScoreboard();
+                                json usernames = foundGame.getUsers();
                                 // foundGame.getGameInfo();
                                 // std::cout<<scoreboard.dump()<<std::endl;
+
+
                                 int host = foundGame.hostSocket;
-                                socketMap[host].writeData(scoreboard.dump());
+                                socketMap[host].writeData(usernames.dump());
                                 std::string responseStr = responseJson.dump();
+
+
+
                                 clientSocket.writeData(responseStr);
                             } else {
                                 std::cout<<"nie znaleziono takiej gry"<<std::endl;
@@ -226,6 +232,9 @@ int main() {
                             socketMap[host].writeData(scoreboard.dump());
                             std::cout<<combinedJson.dump()<< std::endl;
                         } else if (action == "controls"){
+                            std::string gameID = getGameIdForHost(clientSocket.sock, games);
+                            json scoreboard = games[gameID].getScoreboard();
+                            clientSocket.writeData(scoreboard.dump());
                             std::cout<<combinedJson.dump()<< std::endl;
                             std::cout<<combinedJson["status"]<< std::endl;
                             std::cout<<"start"<<std::endl;
@@ -266,6 +275,16 @@ std::string getGameIdForClient(int fd, const std::unordered_map<std::string, Gam
     }
     return ""; 
 }
+std::string getGameIdForHost(int fd, const std::unordered_map<std::string, Game>& games) {
+    for (const auto& pair : games) {
+        const Game& game = pair.second;
+        if (game.hostSocket == fd) {
+            return game.id;
+        }
+    }
+    return "";  
+}
+
 User* getUserByFd(int socket, std::unordered_map<int, User*> & users) {
     for (auto& pair : users) {
         User* user = pair.second;
