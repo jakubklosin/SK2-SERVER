@@ -13,7 +13,7 @@ using json = nlohmann::json;
 
 std::string getGameIdForClient( int deskryptor,const std::unordered_map<std::string, Game>& games);
 std::string getGameIdForHost(int fd,const std::unordered_map<std::string, Game>& games);
-Socket getGameHostSocket( std::unordered_map<int, Socket> socketMap );
+// Socket getGameHostSocket( std::unordered_map<int, Socket> socketMap );
 User* getUserByFd(int socket, std::unordered_map<int, User*> & users);
 int main() {
     int server_fd;
@@ -134,7 +134,7 @@ int main() {
                     for (auto& pair: games) {
                         Game& game = pair.second;
                         bool host = game.isHost(clientSocket.sock);
-                        std::cout << game.hostSocket<< " " << game.id <<" "<< clientSocket.sock<< std::endl;
+                        std::cout << game.hostSocket.sock<< " " << game.id <<" "<< clientSocket.sock<< std::endl;
                         if(host){
                             std::cout<<"Rozlaczony gracz byl hostem, zamykanie gry"<<std::endl;
                         } 
@@ -202,9 +202,9 @@ int main() {
                                 // std::cout<<scoreboard.dump()<<std::endl;
 
 
-                                int host = foundGame.hostSocket;
+                                int host = foundGame.hostSocket.sock;
                                 socketMap[host].writeData(usernames.dump());
-                                std::cout<<usernames.dump()<<std::endl;
+                                // std::cout<<usernames.dump()<<std::endl;
                                 std::string responseStr = responseJson.dump();
 
 
@@ -216,7 +216,15 @@ int main() {
                         }else if(action == "answering"){
                             std::string gameId = getGameIdForClient(clientSocket.sock, games);
                             std::cout<<"gracz o deskryptorze "<<clientSocket.sock<<" przesyla odpowiedz do gry o id: "<<gameId<<std::endl;
-                            std::cout<<"index odpowiedzi: "<<combinedJson["answerID"]<<std::endl;
+                            games[gameId].incermentAnswers();
+                            float answerRate = games[gameId].answers / (float)games[gameId].users.size();
+
+                            if(answerRate>=0.4){
+                                std::cout<< "odpowiedzialo 50p graczy"<<::std::endl; 
+                                games[gameId].gameNextRound5(games[gameId].hostSocket);
+                                
+                            } 
+                            // std::cout<<"index odpowiedzi: "<<combinedJson["answerID"]<<std::endl;
                             if(combinedJson["answerID"]==0){
                                 // std::cout<<games[gameId].users<<endl;
                                 User* found = getUserByFd( clientSocket.sock, users);
@@ -228,17 +236,17 @@ int main() {
                             }
                             json scoreboard = games[gameId].getScoreboard();
                             // games[gameId].getGameInfo();
-                            std::cout<<scoreboard.dump()<<std::endl;
-                            int host = games[gameId].hostSocket;
+                            // std::cout<<scoreboard.dump()<<std::endl;
+                            int host = games[gameId].hostSocket.sock;
                             socketMap[host].writeData(scoreboard.dump());
-                            std::cout<<combinedJson.dump()<< std::endl;
+                            // std::cout<<combinedJson.dump()<< std::endl;
                         } else if (action == "controls"){
                             std::string gameID = getGameIdForHost(clientSocket.sock, games);
                             json scoreboard = games[gameID].getScoreboard();
                             clientSocket.writeData(scoreboard.dump());
-                            std::cout<<combinedJson.dump()<< std::endl;
-                            std::cout<<combinedJson["status"]<< std::endl;
-                            std::cout<<"start"<<std::endl;
+                            // std::cout<<combinedJson.dump()<< std::endl;
+                            // std::cout<<combinedJson["status"]<< std::endl;
+                            // std::cout<<"start"<<std::endl;
                         }else {
                             responseJson["status"] = "Nieznana akcja";
                             std::string responseStr = responseJson.dump();
@@ -279,7 +287,7 @@ std::string getGameIdForClient(int fd, const std::unordered_map<std::string, Gam
 std::string getGameIdForHost(int fd, const std::unordered_map<std::string, Game>& games) {
     for (const auto& pair : games) {
         const Game& game = pair.second;
-        if (game.hostSocket == fd) {
+        if (game.hostSocket.sock == fd) {
             return game.id;
         }
     }

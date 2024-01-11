@@ -15,17 +15,26 @@ class Game{
     public: 
         std::vector<json> questions;
         std::vector<User*> users;
-        int hostSocket;
+        Socket hostSocket;
         std::string id;
+        int answers = 0;
         bool isStarted=false;
     void gameStart(){
         isStarted = true;
     }
+    void incermentAnswers(){
+        answers++;
+    }
+     void resetAnswers(){
+        answers=0;
+    }
     json gameEnd(Game id){
         return json{ {"status", "end"} };
     }
-    json gameNextRound(Game id){
-        return json{ {"status", "nextRound"} };
+    void gameNextRound5(Socket hostSocket){
+        json data =   {"status", "nextRound5"} ;
+        hostSocket.writeData(data.dump());
+        std::cout<<"wyslano dane do:"<<hostSocket.sock<<std::endl;
     }
     void sendToAllClients(std::string message){
         for (User* user : users) {
@@ -42,7 +51,7 @@ class Game{
         addHost(hostFd);
     }
     bool isHost(int fd){
-        if(fd == hostSocket){
+        if(fd == hostSocket.sock){
             return true;
         }else{
             return false;
@@ -72,7 +81,7 @@ class Game{
         users.push_back(user);
     }
     void addHost(int sock){
-        hostSocket = sock;
+        hostSocket.sock = sock;
     }
     json getQuestions() const {
         return json{ {"pytania", questions} };
@@ -100,7 +109,7 @@ class Game{
 
     void getGameInfo() const {
     std::cout << "Informacje o grze (ID: " << id << "):\n";
-    std::cout << "Deskryptor Hosta: " << hostSocket << std::endl;
+    std::cout << "Deskryptor Hosta: " << hostSocket.sock << std::endl;
     std::cout << "Pytania:\n";
     for (const auto& question : questions) {
         std::cout << question.dump() << std::endl;
