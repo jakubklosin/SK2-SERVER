@@ -12,7 +12,7 @@
 using json = nlohmann::json;
 
 std::string getGameIdForClient( int deskryptor,const std::unordered_map<std::string, Game>& games);
-
+Socket getGameHostSocket( std::unordered_map<int, Socket> socketMap );
 int main() {
     int server_fd;
     struct sockaddr_in address;
@@ -81,7 +81,7 @@ int main() {
     testGame.createGame(j,55);
     
     testGame.shuffle(); 
-    testGame.getGameInfo(); 
+    // testGame.getGameInfo(); 
     games[testGame.id] = testGame;
 
     std::vector<struct pollfd> fds;
@@ -159,7 +159,7 @@ int main() {
                             std::cerr << "Błąd parsowania JSON: " << e.what() << '\n';
                         }
                     }
-                    // std::cout << combinedJson.dump()<<std::endl;
+                    std::cout << combinedJson.dump()<<std::endl;
 
                     if (!combinedJson.empty() && combinedJson.contains("action")) {
                         std::string action = combinedJson["action"];
@@ -176,11 +176,12 @@ int main() {
                             newGame.addHost(clientSocket.sock);
                             // newGame.getGameInfo(); 
                             std::cout<<"Host o dekryptorze: "<< clientSocket.sock << " utworzyl gre o id: "<< newGame.id<<std::endl;
-                            newGame.getGameInfo();
+                            // newGame.getGameInfo();
                             responseJson["status"] = "Gra utworzona";
+                            std::string responseStr = responseJson.dump();
+                            clientSocket.writeData(responseStr);
                         } else if (action == "join") {
                             std::string id ;
-
                             if(combinedJson.contains("kod pokoju")){
                             id = combinedJson["kod pokoju"];
                             }
@@ -201,20 +202,27 @@ int main() {
                                 std::cout<<"Gracz o id: "<< clientSocket.sock<<" dolaczyl do gry o id: "<<foundGame.id<<std::endl;
                                 // std::cout << questions<<std::endl;
                                 // foundGame.getGameInfo();
+                                std::string responseStr = responseJson.dump();
+                                clientSocket.writeData(responseStr);
                             } else {
                                 std::cout<<"nie znaleziono takiej gry"<<std::endl;
                             }
                         }else if(action == "answering"){
                             std::string gameId = getGameIdForClient(clientSocket.sock, games);
                             std::cout<<"gracz o deskryptorze "<<clientSocket.sock<<" przesyla odpowiedz do gry o id: "<<gameId<<std::endl;
+                            json scoreboard = games[gameId].getScoreboard();
+                            std::cout<<scoreboard.dump()<<std::endl;
+                            int host =games[gameId].hostSocket;
+                            socketMap[host].writeData(scoreboard.dump());
                             std::cout<<combinedJson.dump()<< std::endl;
-                        } else {
+                        } else if (action == "controls"){
+                            std::cout<<combinedJson.dump()<< std::endl;
+                            std::cout<<"start"<<std::endl;
+                        }else {
                             responseJson["status"] = "Nieznana akcja";
+                            std::string responseStr = responseJson.dump();
+                            clientSocket.writeData(responseStr);
                         }
-
-                        std::string responseStr = responseJson.dump();
-                        
-                        clientSocket.writeData(responseStr);
                     }
                     clientSocket.message.clear(); // Czyszczenie listy po przetworzeniu
                 }
@@ -224,12 +232,10 @@ int main() {
         // Usuń zamknięte połączenia
         fds.erase(std::remove_if(fds.begin(), fds.end(), [](const struct pollfd &pfd) { return pfd.fd == -1; }), fds.end());
         }
-
     }
     }catch (const char* msg) {
     std::cerr << "Wyjątek char const*: " << msg << '\n';
     }   
-
 
     for (auto &fd : fds) {
         if (fd.fd >= 0) close(fd.fd);
@@ -250,5 +256,4 @@ std::string getGameIdForClient(int deskryptor, const std::unordered_map<std::str
     }
     return ""; 
 }
- 
  

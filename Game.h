@@ -45,9 +45,6 @@ class Game{
     }
     void shuffle() {
         for(int i = 0; i<questions.size(); i++ ){
-        //     for(int j = 0; j<4; j++ ){
-        //     std::cout<<questions[i]["odpowiedzi"][j]<<std::endl;
-        // }
         shuffledQuestions.push_back(shuffleAnswers(i));
         }
         questions = shuffledQuestions;
@@ -72,9 +69,20 @@ class Game{
         hostSocket = sock;
     }
     json getQuestions() const {
-            return json{ {"pytania", questions} };
+        return json{ {"pytania", questions} };
+    }
+    json getScoreboard(){
+        json scoreboard;
+        scoreboard["data"] = "scoreboard";
+        scoreboard["users"] =  json::array();
+        for (const auto& user : users) {
+            json userJson;
+            userJson["user"] = user.nickname;
+            userJson["score"] = user.score;
+            scoreboard["users"].push_back(userJson);
         }
-        
+        return scoreboard;
+    }
     void getGameInfo() const {
             std::cout << "Informacje o grze (ID: " << id << "):\n";
             std::cout << "Deskryptor Hosta: " << hostSocket <<std::endl;

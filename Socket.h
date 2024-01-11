@@ -9,11 +9,11 @@
 
 class Socket{
     public:
-    int sock;
-    char buffer[512];
-    std::string nowRead;
-    int messageSize = -1;
-    std::list<std::string> message;
+        int sock;
+        char buffer[512];
+        std::string nowRead;
+        int messageSize = -1;
+        std::list<std::string> message;
 
     void readData() {
     std::memset(buffer, 0, 512);
