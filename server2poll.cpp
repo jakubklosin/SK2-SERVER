@@ -219,10 +219,13 @@ int main() {
                             games[gameId].incermentAnswers();
                             float answerRate = games[gameId].answers / (float)games[gameId].users.size();
 
-                            if(answerRate>=0.4){
+                            if(answerRate == 1 ){
+                                games[gameId].gameNextRoundRN(games[gameId].hostSocket);
+                                games[gameId].resetAnswers();
+                            }
+                            else if(answerRate>=0.4){
                                 std::cout<< "odpowiedzialo 50p graczy"<<::std::endl; 
                                 games[gameId].gameNextRound5(games[gameId].hostSocket);
-                                
                             } 
                             // std::cout<<"index odpowiedzi: "<<combinedJson["answerID"]<<std::endl;
                             if(combinedJson["answerID"]==0){

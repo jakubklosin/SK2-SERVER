@@ -32,7 +32,14 @@ class Game{
         return json{ {"status", "end"} };
     }
     void gameNextRound5(Socket hostSocket){
-        json data =   {"status", "nextRound5"} ;
+        json data  ;
+        data["status"]="next round5";
+        hostSocket.writeData(data.dump());
+        std::cout<<"wyslano dane do:"<<hostSocket.sock<<std::endl;
+    }
+    void gameNextRoundRN(Socket hostSocket){
+        json data  ;
+        data["status"]="next roundRN";
         hostSocket.writeData(data.dump());
         std::cout<<"wyslano dane do:"<<hostSocket.sock<<std::endl;
     }
