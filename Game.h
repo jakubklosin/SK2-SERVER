@@ -91,12 +91,9 @@ class Game{
     }
     json getUsers() {
     json usernames;
-    usernames["usersJoined"] = "users";
-    usernames["users"] = json::array();
+    usernames["usersJoined"]   = json::array();
     for (User* user : users) {
-        json userJson;
-        userJson["user"] = user->nickname;
-        usernames["users"].push_back(userJson);
+        usernames["usersJoined"].push_back(user->nickname);
     }
     return usernames;
     }

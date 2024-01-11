@@ -204,6 +204,7 @@ int main() {
 
                                 int host = foundGame.hostSocket;
                                 socketMap[host].writeData(usernames.dump());
+                                std::cout<<usernames.dump()<<std::endl;
                                 std::string responseStr = responseJson.dump();
 
 
