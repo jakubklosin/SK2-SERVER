@@ -14,7 +14,7 @@ using json = nlohmann::json;
 class Game{
     public: 
         std::vector<json> questions;
-        std::vector<json> shuffledQuestions;
+        
         std::vector<User*> users;
         int hostSocket;
         std::string id;
@@ -45,6 +45,7 @@ class Game{
         }
     }
     void shuffle() {
+        std::vector<json> shuffledQuestions;
         for(int i = 0; i<questions.size(); i++ ){
         shuffledQuestions.push_back(shuffleAnswers(i));
         }

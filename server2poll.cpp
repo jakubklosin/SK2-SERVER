@@ -183,8 +183,7 @@ int main() {
                             }
                             auto gameIter = games.find(id);
                             if (gameIter != games.end()) {
-                                // Gra o danym ID została znaleziona w mapie
-                                Game &foundGame = gameIter->second; // Referencja do znalezionej gry
+                                Game &foundGame = gameIter->second;  
                                 User* newUser= new User();
                                 newUser->socket = clientSocket;
                                 if (combinedJson.contains("nickname")) {
@@ -192,17 +191,15 @@ int main() {
                                 }
                                 users[clientSocket.sock] = newUser;
                                 foundGame.addUserToGame(newUser);
-                                // foundGame.shuffle();
                                 foundGame.shuffle();
                                 questions = foundGame.getQuestions();
                                 responseJson = questions;
-                                std::cout<<"Gracz o id: "<< clientSocket.sock<<" dolaczyl do gry o id: "<<foundGame.id<<std::endl;
+                                // std::cout<<"Gracz o id: "<< clientSocket.sock<<" dolaczyl do gry o id: "<<foundGame.id<<std::endl;
                                 // std::cout << questions<<std::endl;
-                                // foundGame.getGameInfo();
                                 json scoreboard = foundGame.getScoreboard();
-                                foundGame.getGameInfo();
-                                std::cout<<scoreboard.dump()<<std::endl;
-                                int host =foundGame.hostSocket;
+                                // foundGame.getGameInfo();
+                                // std::cout<<scoreboard.dump()<<std::endl;
+                                int host = foundGame.hostSocket;
                                 socketMap[host].writeData(scoreboard.dump());
                                 std::string responseStr = responseJson.dump();
                                 clientSocket.writeData(responseStr);
@@ -217,9 +214,7 @@ int main() {
                                 // std::cout<<games[gameId].users<<endl;
                                 User* found = getUserByFd( clientSocket.sock, users);
                                 if (found) {
-                                    found->incrementScore(); // Zwiększa wynik dla znalezionego użytkownika
-                                    std::cout << found->nickname << std::endl;  
-                                    std::cout << found->score << std::endl;  
+                                    found->incrementScore();  
                                 } else {
                                     std::cout << "Nie znaleziono użytkownika." << std::endl;
                                 }
@@ -245,7 +240,6 @@ int main() {
                 // clientSocket.message.clear();  
             } 
             
-        // Usuń zamknięte połączenia
         fds.erase(std::remove_if(fds.begin(), fds.end(), [](const struct pollfd &pfd) { return pfd.fd == -1; }), fds.end());
         }
     }
@@ -279,14 +273,6 @@ User* getUserByFd(int socket, std::unordered_map<int, User*> & users) {
             return user;
         }
     }
-    return nullptr; // Zwróć nullptr, jeśli nie znaleziono użytkownika
+    return nullptr;  
 }
 
-// User* getUserByFd(int socket, std::unordered_map<int, User*>& users) {
-//     auto it = users.find(socket);
-//     if (it != users.end()) {
-//         return it->second; // Znaleziono użytkownika, zwróć wskaźnik
-//     } else {
-//         return nullptr; // Nie znaleziono użytkownika, zwróć nullptr
-//     }
-// }
