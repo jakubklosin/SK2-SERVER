@@ -12,8 +12,8 @@
 using json = nlohmann::json;
 
 std::string getGameIdForClient( int deskryptor,const std::unordered_map<std::string, Game>& games);
-std::string getGameIdForHost( int deskryptor,const std::unordered_map<std::string, Game>& games);
-Socket getGameHostSocket( std::unordered_map<int, Socket> socketMap );
+// Socket getGameHostSocket( std::unordered_map<int, Socket> socketMap );
+User* getUserByFd(int socket, std::unordered_map<int, User*> & users);
 int main() {
     int server_fd;
     struct sockaddr_in address;
@@ -56,6 +56,7 @@ int main() {
 
     std::unordered_map<int, Socket> socketMap;
     std::unordered_map<std::string, Game> games;
+    std::unordered_map<int, User*> users;
 
     json j;
     j["action"] = "create";
@@ -96,12 +97,6 @@ int main() {
             break;
         }
         for (auto &fd : fds) {
-            // if (fd.revents & POLLHUP){
-            //             close(fd.fd);
-            //             fd.fd =-1;
-            //             std::cout<<"Uzytkownik o deskryptorze: "<<fd.fd << " rozlaczyl sie"<<std::endl;
-            //             continue;
-            //         } 
             if (fd.revents & POLLIN) {
                 if (fd.fd == server_fd) {
                     // Akceptacja nowego połączenia
@@ -125,7 +120,7 @@ int main() {
                     }
                     fds.push_back({new_socket, POLLIN, 0});
                 } else {
-                    
+                    clientSocket.message.clear();
                     // Obsługa danych od klienta
                     Socket& clientSocket = socketMap[fd.fd];
                     try
@@ -160,7 +155,7 @@ int main() {
                             std::cerr << "Błąd parsowania JSON: " << e.what() << '\n';
                         }
                     }
-                    std::cout << combinedJson.dump()<<std::endl;
+                    // std::cout << combinedJson.dump()<<std::endl;
 
                     if (!combinedJson.empty() && combinedJson.contains("action")) {
                         std::string action = combinedJson["action"];
@@ -190,11 +185,12 @@ int main() {
                             if (gameIter != games.end()) {
                                 // Gra o danym ID została znaleziona w mapie
                                 Game &foundGame = gameIter->second; // Referencja do znalezionej gry
-                                User newUser;
-                                newUser.socket = clientSocket;
+                                User* newUser= new User();
+                                newUser->socket = clientSocket;
                                 if (combinedJson.contains("nickname")) {
-                                    newUser.setNickname(combinedJson["nickname"]);
+                                    newUser->setNickname(combinedJson["nickname"]);
                                 }
+                                users[clientSocket.sock] = newUser;
                                 foundGame.addUserToGame(newUser);
                                 // foundGame.shuffle();
                                 foundGame.shuffle();
@@ -204,6 +200,7 @@ int main() {
                                 // std::cout << questions<<std::endl;
                                 // foundGame.getGameInfo();
                                 json scoreboard = foundGame.getScoreboard();
+                                foundGame.getGameInfo();
                                 std::cout<<scoreboard.dump()<<std::endl;
                                 int host =foundGame.hostSocket;
                                 socketMap[host].writeData(scoreboard.dump());
@@ -215,19 +212,27 @@ int main() {
                         }else if(action == "answering"){
                             std::string gameId = getGameIdForClient(clientSocket.sock, games);
                             std::cout<<"gracz o deskryptorze "<<clientSocket.sock<<" przesyla odpowiedz do gry o id: "<<gameId<<std::endl;
+                            std::cout<<"index odpowiedzi: "<<combinedJson["answerID"]<<std::endl;
                             if(combinedJson["answerID"]==0){
                                 // std::cout<<games[gameId].users<<endl;
-                                // games[gameId].users[clientSocket.sock].incrementScore();
+                                User* found = getUserByFd( clientSocket.sock, users);
+                                if (found) {
+                                    found->incrementScore(); // Zwiększa wynik dla znalezionego użytkownika
+                                    std::cout << found->nickname << std::endl;  
+                                    std::cout << found->score << std::endl;  
+                                } else {
+                                    std::cout << "Nie znaleziono użytkownika." << std::endl;
+                                }
                             }
                             json scoreboard = games[gameId].getScoreboard();
+                            // games[gameId].getGameInfo();
                             std::cout<<scoreboard.dump()<<std::endl;
-                            int host =games[gameId].hostSocket;
+                            int host = games[gameId].hostSocket;
                             socketMap[host].writeData(scoreboard.dump());
                             std::cout<<combinedJson.dump()<< std::endl;
                         } else if (action == "controls"){
                             std::cout<<combinedJson.dump()<< std::endl;
                             std::cout<<combinedJson["status"]<< std::endl;
-                            
                             std::cout<<"start"<<std::endl;
                         }else {
                             responseJson["status"] = "Nieznana akcja";
@@ -256,24 +261,32 @@ int main() {
     return 0;
 }
 
-std::string getGameIdForClient(int deskryptor, const std::unordered_map<std::string, Game>& games) {
+std::string getGameIdForClient(int fd, const std::unordered_map<std::string, Game>& games) {
     for (const auto& match : games) {
         const Game& game = match.second;
-        for (const auto& uzytkownik : game.users) {
-            if (uzytkownik.socket.sock == deskryptor) {
+        for (const auto& user : game.users) {
+            if (user->socket.sock == fd) {
                 return game.id;
             }
         }
     }
     return ""; 
 }
-std::string getGameIdForHost(int deskryptor, const std::unordered_map<std::string, Game>& games) {
-    for (const auto& match : games) {
-        const Game& game = match.second;
-            if (game.hostSocket == deskryptor) {
-                return game.id;
-            }
+User* getUserByFd(int socket, std::unordered_map<int, User*> & users) {
+    for (auto& pair : users) {
+        User* user = pair.second;
+        if (user->socket.sock == socket) {
+            return user;
+        }
     }
-    return ""; 
+    return nullptr; // Zwróć nullptr, jeśli nie znaleziono użytkownika
 }
- 
+
+// User* getUserByFd(int socket, std::unordered_map<int, User*>& users) {
+//     auto it = users.find(socket);
+//     if (it != users.end()) {
+//         return it->second; // Znaleziono użytkownika, zwróć wskaźnik
+//     } else {
+//         return nullptr; // Nie znaleziono użytkownika, zwróć nullptr
+//     }
+// }

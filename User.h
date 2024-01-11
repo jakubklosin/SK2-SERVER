@@ -20,7 +20,7 @@ class User{
             return score;
         }
         void incrementScore(){
-            score += 10;
+            this->score += 10;
         }
         void setNickname(const std::string& nick) {
         nickname = nick;

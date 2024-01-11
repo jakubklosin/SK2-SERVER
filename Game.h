@@ -15,7 +15,7 @@ class Game{
     public: 
         std::vector<json> questions;
         std::vector<json> shuffledQuestions;
-        std::vector<User> users;
+        std::vector<User*> users;
         int hostSocket;
         std::string id;
         bool isStarted=false;
@@ -63,7 +63,7 @@ class Game{
         return output;
     }
    
-    void addUserToGame(User user){
+    void addUserToGame(User* user){
         users.push_back(user);
     }
     void addHost(int sock){
@@ -72,31 +72,33 @@ class Game{
     json getQuestions() const {
         return json{ {"pytania", questions} };
     }
-    json getScoreboard(){
-        json scoreboard;
-        scoreboard["data"] = "scoreboard";
-        scoreboard["users"] =  json::array();
-        for (const auto& user : users) {
-            json userJson;
-            userJson["user"] = user.nickname;
-            userJson["score"] = user.score;
-            scoreboard["users"].push_back(userJson);
-        }
-        return scoreboard;
+    json getScoreboard() {
+    json scoreboard;
+    scoreboard["data"] = "scoreboard";
+    scoreboard["users"] = json::array();
+    for (User* user : users) {
+        json userJson;
+        userJson["user"] = user->nickname;
+        userJson["score"] = user->score;
+        scoreboard["users"].push_back(userJson);
     }
-    void getGameInfo() const {
-            std::cout << "Informacje o grze (ID: " << id << "):\n";
-            std::cout << "Deskryptor Hosta: " << hostSocket <<std::endl;
-            std::cout << "Pytania:\n";
-            for (const auto& question : questions) {
-                std::cout << question.dump() << std::endl;
-            }
+    return scoreboard;
+}
 
-            std::cout << "Użytkownicy w grze:\n";
-            for (User user: users) {
-                std::cout << "Użytkownik Socket ID: " << user.socket.sock << ", Nickname: " << user.nickname << std::endl;
-            }
-        }
+    void getGameInfo() const {
+    std::cout << "Informacje o grze (ID: " << id << "):\n";
+    std::cout << "Deskryptor Hosta: " << hostSocket << std::endl;
+    std::cout << "Pytania:\n";
+    for (const auto& question : questions) {
+        std::cout << question.dump() << std::endl;
+    }
+
+    std::cout << "Użytkownicy w grze:\n";
+    for (User* user : users) {
+        std::cout << "Użytkownik Socket ID: " << user->socket.sock << ", Nickname: " << user->nickname << "punkty: " << user->score << std::endl;
+    }
+    }
+
 };
 
 #endif 
