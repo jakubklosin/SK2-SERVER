@@ -132,6 +132,8 @@ int main() {
                         std::cout << game.hostSocket.sock<< " " << game.id <<" "<< clientSocket.sock<< std::endl;
                         if(host){
                             std::cout<<"Rozlaczony gracz byl hostem, zamykanie gry"<<std::endl;
+                            json dc = {"status","disconnected"};
+                            game.sendToAllClients(dc.dump());
                         } 
                         host = false;
                     }    
@@ -155,7 +157,7 @@ int main() {
 
                     if (!combinedJson.empty() && combinedJson.contains("action")) {
                         std::string action = combinedJson["action"];
-                        // std::cout << "Akcja: " << action << std::endl;
+                        // std::cout << "Akcja: " << action << std::endl;next
 
                         json responseJson;  
                         json questions;
