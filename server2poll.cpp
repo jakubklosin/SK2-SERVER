@@ -13,7 +13,6 @@ using json = nlohmann::json;
 
 std::string getGameIdForClient( int deskryptor,const std::unordered_map<std::string, Game>& games);
 std::string getGameIdForHost(int fd,const std::unordered_map<std::string, Game>& games);
-// Socket getGameHostSocket( std::unordered_map<int, Socket> socketMap );
 User* getUserByFd(int socket, std::unordered_map<int, User*> & users);
 int main() {
     int server_fd;
@@ -22,7 +21,6 @@ int main() {
     int addrlen = sizeof(address);
     Socket clientSocket;
 
-    // Tworzenie gniazda serwera
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
         perror("socket failed");
         exit(EXIT_FAILURE);
@@ -32,7 +30,6 @@ int main() {
         perror("setsockopt SO_REUSEADDR failed");
         exit(EXIT_FAILURE);
     }
-    // Przypisywanie adresu do gniazda
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
     address.sin_port = htons(5555);
@@ -100,7 +97,6 @@ int main() {
         for (auto &fd : fds) {
             if (fd.revents & POLLIN) {
                 if (fd.fd == server_fd) {
-                    // Akceptacja nowego połączenia
                     int new_socket = accept(server_fd, nullptr, nullptr);
                     if (new_socket < 0) {
                         perror("accept");
@@ -122,7 +118,6 @@ int main() {
                     fds.push_back({new_socket, POLLIN, 0});
                 } else {
                     clientSocket.message.clear();
-                    // Obsługa danych od klienta
                     Socket& clientSocket = socketMap[fd.fd];
                     try
                     {
@@ -162,13 +157,12 @@ int main() {
                         std::string action = combinedJson["action"];
                         // std::cout << "Akcja: " << action << std::endl;
 
-                        json responseJson; // Obiekt JSON do wysłania odpowiedzi
+                        json responseJson;  
                         json questions;
                         if (action == "create") {
-                            // Logika tworzenia gry
                             Game newGame;
 
-                            newGame.createGame(combinedJson, clientSocket.sock); // Tworzenie gry z otrzymanych danych
+                            newGame.createGame(combinedJson, clientSocket.sock);  
                             games[newGame.id] = newGame;
                             newGame.addHost(clientSocket.sock);
                             // newGame.getGameInfo(); 
@@ -256,7 +250,7 @@ int main() {
                             clientSocket.writeData(responseStr);
                         }
                     }
-                    clientSocket.message.clear(); // Czyszczenie listy po przetworzeniu
+                    clientSocket.message.clear();  
                 }
                 // clientSocket.message.clear();  
             } 
