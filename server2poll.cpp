@@ -132,8 +132,10 @@ int main() {
                         std::cout << game.hostSocket.sock<< " " << game.id <<" "<< clientSocket.sock<< std::endl;
                         if(host){
                             std::cout<<"Rozlaczony gracz byl hostem, zamykanie gry"<<std::endl;
-                            json dc = {"status","disconnected"};
-                            game.sendToAllClients(dc.dump());
+                            json dc;
+                            dc["host"] = "disconnected";
+                            std::string dcStr = dc.dump();
+                            game.sendToAllClients(dcStr);
                         } 
                         host = false;
                     }    
@@ -213,17 +215,17 @@ int main() {
                             std::string gameId = getGameIdForClient(clientSocket.sock, games);
                             std::cout<<"gracz o deskryptorze "<<clientSocket.sock<<" przesyla odpowiedz do gry o id: "<<gameId<<std::endl;
                             games[gameId].incermentAnswers();
-                            float answerRate = games[gameId].answers / (float)games[gameId].users.size();
+                            // float answerRate = games[gameId].answers / (float)games[gameId].users.size();
 
-                            if(answerRate == 1 ){
-                                games[gameId].gameNextRoundRN(games[gameId].hostSocket);
-                                games[gameId].resetAnswers();
-                            }
-                            else if(answerRate>=0.4){
-                                std::cout<< "odpowiedzialo 50p graczy"<<::std::endl; 
-                                games[gameId].gameNextRound5(games[gameId].hostSocket);
-                            } 
-                            // std::cout<<"index odpowiedzi: "<<combinedJson["answerID"]<<std::endl;
+                            // if(answerRate == 1 ){
+                            //     games[gameId].gameNextRoundRN(games[gameId].hostSocket);
+                            //     games[gameId].resetAnswers();
+                            // }
+                            // else if(answerRate>=0.4){
+                            //     std::cout<< "odpowiedzialo 50p graczy"<<::std::endl; 
+                            //     games[gameId].gameNextRound5(games[gameId].hostSocket);
+                            // } 
+                            std::cout<<"index odpowiedzi: "<<combinedJson["answerID"]<<std::endl;
                             if(combinedJson["answerID"]==0){
                                 // std::cout<<games[gameId].users<<endl;
                                 User* found = getUserByFd( clientSocket.sock, users);
